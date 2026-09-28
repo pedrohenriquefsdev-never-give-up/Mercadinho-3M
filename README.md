@@ -1,22 +1,17 @@
-# Tempero da Vovó Marly — v0.3.0
+# Tempero da Vovó Marly — v0.3.1
 
-Versão visual com identidade real da marca.
+Refinamento visual da home com paleta mais fiel à logo:
+- menos azul;
+- mais creme, madeira, dourado, laranja e verde;
+- hero menos "IA" e mais marca;
+- uso das artes reais da comunicação;
+- carrinho e pedido via WhatsApp mantidos.
 
-## Destaques
-- logo real aplicada;
-- paleta azul, laranja, amarelo, creme e madeira;
-- hero mais marcante;
-- cards com estética de cardápio/delivery;
-- artes reais da marca;
-- carrinho funcional;
-- pedido via WhatsApp;
-- responsivo para celular.
-
-## Rodar
+## Rodar localmente
 ```bash
 npm install
 npm run dev
 ```
 
-## Deploy
-Substitua os arquivos da versão anterior no GitHub. A Vercel fará o novo deploy automaticamente.
+## Observação
+Se o repositório tiver arquivos antigos, substitua tudo antes de subir.
