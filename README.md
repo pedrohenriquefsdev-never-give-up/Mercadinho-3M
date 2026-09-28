@@ -1,4 +1,4 @@
-# Mercadinho 3M — v0.2.0
+# Tempero da Vovó Marly — v0.2.0 — v0.2.0
 
 Versão com **visual reformulado**, inspirada nas referências enviadas:
 - identidade mais quente e comercial;
