@@ -1,17 +1,16 @@
-# Tempero da Vovó Marly — v0.3.1
+# Tempero da Vovó Marly — v0.4.0
 
-Refinamento visual da home com paleta mais fiel à logo:
-- menos azul;
-- mais creme, madeira, dourado, laranja e verde;
-- hero menos "IA" e mais marca;
-- uso das artes reais da comunicação;
-- carrinho e pedido via WhatsApp mantidos.
+Novidades:
+- home refinada com novo texto;
+- Firebase conectado;
+- catálogo lê produtos ativos do Firestore;
+- fallback local se o banco estiver vazio;
+- `/admin` com login Firebase;
+- validação do documento `users/{uid}`;
+- CRUD de produtos;
+- cadastro de categorias;
+- preço, promoção, destaque, cardápio do dia e imagem por URL.
 
-## Rodar localmente
-```bash
-npm install
-npm run dev
-```
+Como o Firebase Storage não será usado agora, a imagem do produto é cadastrada por URL externa.
 
-## Observação
-Se o repositório tiver arquivos antigos, substitua tudo antes de subir.
+Para atualizar: substitua os arquivos antigos no GitHub e faça commit na `main`.
