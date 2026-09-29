@@ -38,6 +38,7 @@ export default function Home() {
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutBusy, setCheckoutBusy] = useState(false);
+  const [lastOrderAt, setLastOrderAt] = useState(0);
   const [form, setForm] = useState({
     name: "", phone: "", deliveryType: "retirada",
     address: "", neighborhood: "", reference: "",
@@ -120,65 +121,37 @@ export default function Home() {
   async function submitOrder(event: FormEvent) {
     event.preventDefault();
     if (!cart.length || checkoutBusy) return;
-    if (settings.minimumOrder && subtotal < settings.minimumOrder) {
-      alert(`O pedido mínimo é ${money.format(settings.minimumOrder)}.`);
-      return;
-    }
+    const now = Date.now();
+    if (now - lastOrderAt < 15000) { alert("Aguarde alguns segundos antes de enviar outro pedido."); return; }
+
+    const cleanName=form.name.trim().slice(0,80);
+    const cleanPhone=form.phone.replace(/[^\d()+\-\s]/g,"").trim().slice(0,30);
+    const cleanAddress=form.address.trim().slice(0,160);
+    const cleanNeighborhood=form.neighborhood.trim().slice(0,80);
+    const cleanReference=form.reference.trim().slice(0,120);
+    const digits=cleanPhone.replace(/\D/g,"");
+    if(cleanName.length<2){alert("Informe seu nome.");return;}
+    if(digits.length<10||digits.length>13){alert("Informe um WhatsApp válido.");return;}
+    if(form.deliveryType==="entrega"&&(!cleanAddress||!cleanNeighborhood)){alert("Informe endereço e bairro para entrega.");return;}
+    if(settings.minimumOrder&&subtotal<settings.minimumOrder){alert(`O pedido mínimo é ${money.format(settings.minimumOrder)}.`);return;}
+    if(cart.length>30||cart.some(item=>item.quantity<1||item.quantity>20)){alert("Revise as quantidades do pedido.");return;}
 
     setCheckoutBusy(true);
     try {
-      const items = cart.map(item => {
-        const unitPrice = Number(item.promotionalPrice || item.price);
-        return { productId:item.id, name:item.name, quantity:item.quantity, unitPrice, subtotal:unitPrice*item.quantity };
-      });
-
-      const orderPayload = {
-        storeId: STORE_ID,
-        customerName: form.name.trim(),
-        customerPhone: form.phone.trim(),
-        deliveryType: form.deliveryType,
-        address: form.deliveryType==="entrega" ? form.address.trim() : "",
-        neighborhood: form.deliveryType==="entrega" ? form.neighborhood.trim() : "",
-        reference: form.deliveryType==="entrega" ? form.reference.trim() : "",
-        paymentMethod: form.paymentMethod,
-        changeFor: form.paymentMethod==="dinheiro" && form.changeFor ? Number(form.changeFor) : null,
-        items,
-        subtotal,
-        deliveryFee,
-        total,
-        status: "novo",
-        createdAt: serverTimestamp()
-      };
-
-      const ref = await addDoc(collection(db, "orders"), orderPayload);
-      const shortId = ref.id.slice(0,6).toUpperCase();
-
-      const lines = [
-        `Olá! Fiz o pedido #${shortId} no site do ${settings.name || "Tempero da Vovó Marly"}.`,
-        "",
-        ...items.map(i=>`• ${i.quantity}x ${i.name} — ${money.format(i.subtotal)}`),
-        "",
-        `Subtotal: ${money.format(subtotal)}`,
-        deliveryFee ? `Entrega: ${money.format(deliveryFee)}` : "",
-        `Total: ${money.format(total)}`,
-        "",
-        `Cliente: ${form.name}`,
-        `Telefone: ${form.phone}`,
-        `Tipo: ${form.deliveryType==="entrega" ? "Entrega" : "Retirada"}`,
-        form.deliveryType==="entrega" ? `Endereço: ${form.address}, ${form.neighborhood}` : "",
-        `Pagamento: ${form.paymentMethod.toUpperCase()}`
-      ].filter(Boolean);
-
-      setCart([]);
-      localStorage.removeItem("vovo-marly-cart");
-      const phone = (settings.whatsapp || "5582996451844").replace(/\D/g,"");
-      window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
-    } catch (error) {
-      console.error(error);
-      alert("Não foi possível registrar o pedido. Tente novamente.");
-    } finally {
-      setCheckoutBusy(false);
-    }
+      const items=cart.map(item=>{const unitPrice=Number(item.promotionalPrice||item.price);const quantity=Math.min(item.quantity,20);return {productId:item.id,name:item.name.slice(0,100),quantity,unitPrice,subtotal:unitPrice*quantity};});
+      const safeSubtotal=items.reduce((sum,item)=>sum+item.subtotal,0);
+      const safeDeliveryFee=form.deliveryType==="entrega"?Number(settings.deliveryFee||0):0;
+      const safeTotal=safeSubtotal+safeDeliveryFee;
+      const orderPayload={storeId:STORE_ID,customerName:cleanName,customerPhone:cleanPhone,deliveryType:form.deliveryType,address:form.deliveryType==="entrega"?cleanAddress:"",neighborhood:form.deliveryType==="entrega"?cleanNeighborhood:"",reference:form.deliveryType==="entrega"?cleanReference:"",paymentMethod:form.paymentMethod,changeFor:form.paymentMethod==="dinheiro"&&form.changeFor?Number(form.changeFor):null,items,subtotal:safeSubtotal,deliveryFee:safeDeliveryFee,total:safeTotal,status:"novo",createdAt:serverTimestamp()};
+      const ref=await addDoc(collection(db,"orders"),orderPayload);
+      setLastOrderAt(Date.now());
+      const shortId=ref.id.slice(0,6).toUpperCase();
+      const lines=[`Olá! Fiz o pedido #${shortId} no site do ${settings.name||"Tempero da Vovó Marly"}.`,"",...items.map(i=>`• ${i.quantity}x ${i.name} — ${money.format(i.subtotal)}`),"",`Subtotal: ${money.format(safeSubtotal)}`,safeDeliveryFee?`Entrega: ${money.format(safeDeliveryFee)}`:"",`Total: ${money.format(safeTotal)}`,"",`Cliente: ${cleanName}`,`Telefone: ${cleanPhone}`,`Tipo: ${form.deliveryType==="entrega"?"Entrega":"Retirada"}`,form.deliveryType==="entrega"?`Endereço: ${cleanAddress}, ${cleanNeighborhood}`:"",`Pagamento: ${form.paymentMethod.toUpperCase()}`].filter(Boolean);
+      setCart([]);localStorage.removeItem("vovo-marly-cart");
+      const phone=(settings.whatsapp||"5582996451844").replace(/\D/g,"");
+      window.location.href=`https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
+    } catch(error){console.error(error);alert("Não foi possível registrar o pedido. Tente novamente.");}
+    finally{setCheckoutBusy(false);}
   }
 
   return (

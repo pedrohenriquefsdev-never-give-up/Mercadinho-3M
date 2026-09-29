@@ -2,68 +2,27 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
-    }
-
-    function userDoc() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-    }
-
-    function staff() {
-      return signedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && userDoc().active == true
-        && userDoc().storeId == "tempero-da-vovo-marly"
-        && (userDoc().role == "admin" || userDoc().role == "manager");
-    }
-
-    function admin() {
-      return staff() && userDoc().role == "admin";
-    }
+    function signedIn() { return request.auth != null; }
+    function currentUserExists() { return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function currentUser() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function staff() { return currentUserExists() && currentUser().active == true && currentUser().storeId == "tempero-da-vovo-marly" && (currentUser().role == "admin" || currentUser().role == "manager"); }
+    function admin() { return staff() && currentUser().role == "admin"; }
+    function validText(value, max) { return value is string && value.size() > 0 && value.size() <= max; }
 
     match /users/{uid} {
       allow read: if staff();
-      allow create, update, delete: if admin();
+      allow create: if admin() && request.resource.data.storeId == "tempero-da-vovo-marly" && request.resource.data.active is bool && (request.resource.data.role == "admin" || request.resource.data.role == "manager") && request.resource.data.name is string && request.resource.data.email is string;
+      allow update: if admin() && request.resource.data.storeId == "tempero-da-vovo-marly" && request.resource.data.active is bool && (request.resource.data.role == "admin" || request.resource.data.role == "manager") && request.resource.data.name is string && request.resource.data.email is string;
+      allow delete: if admin() && request.auth.uid != uid;
     }
-
-    match /stores/{storeId} {
-      allow read: if resource.data.active == true || staff();
-      allow create, update, delete: if staff();
-    }
-
-    match /categories/{categoryId} {
-      allow read: if resource.data.active == true || staff();
-      allow create, update, delete: if staff();
-    }
-
-    match /products/{productId} {
-      allow read: if resource.data.active == true || staff();
-      allow create, update, delete: if staff();
-    }
-
+    match /stores/{storeId} { allow read: if resource.data.active == true || staff(); allow create, update, delete: if staff(); }
+    match /categories/{categoryId} { allow read: if resource.data.active == true || staff(); allow create, update, delete: if staff(); }
+    match /products/{productId} { allow read: if resource.data.active == true || staff(); allow create, update, delete: if staff(); }
     match /orders/{orderId} {
-      allow create: if
-        request.resource.data.storeId == "tempero-da-vovo-marly"
-        && request.resource.data.customerName is string
-        && request.resource.data.customerPhone is string
-        && request.resource.data.status == "novo"
-        && request.resource.data.items is list
-        && request.resource.data.items.size() > 0
-        && request.resource.data.items.size() <= 50
-        && request.resource.data.total is number
-        && request.resource.data.total >= 0;
+      allow create: if request.resource.data.storeId == "tempero-da-vovo-marly" && validText(request.resource.data.customerName,80) && validText(request.resource.data.customerPhone,30) && (request.resource.data.deliveryType == "entrega" || request.resource.data.deliveryType == "retirada") && (request.resource.data.paymentMethod == "pix" || request.resource.data.paymentMethod == "dinheiro" || request.resource.data.paymentMethod == "cartao") && request.resource.data.status == "novo" && request.resource.data.items is list && request.resource.data.items.size() > 0 && request.resource.data.items.size() <= 30 && request.resource.data.subtotal is number && request.resource.data.subtotal >= 0 && request.resource.data.deliveryFee is number && request.resource.data.deliveryFee >= 0 && request.resource.data.total is number && request.resource.data.total >= 0 && request.resource.data.total <= 5000;
       allow read, update, delete: if staff();
     }
-
-    match /customers/{customerId} {
-      allow create: if request.resource.data.name is string
-        && request.resource.data.phone is string;
-      allow read, update, delete: if staff();
-    }
-
-    match /{document=**} {
-      allow read, write: if false;
-    }
+    match /customers/{customerId} { allow create: if validText(request.resource.data.name,80) && validText(request.resource.data.phone,30); allow read, update, delete: if staff(); }
+    match /{document=**} { allow read, write: if false; }
   }
 }

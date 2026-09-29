@@ -1,36 +1,31 @@
-# Tempero da Vovó Marly — v0.9.1
+# Tempero da Vovó Marly — v1.0.0
 
-## Novidades
-- Upload de imagem do produto direto para o Cloudinary.
-- Prévia da imagem e opção de remover antes de salvar.
-- Limite de 5 MB e formatos JPG, PNG e WEBP.
-- Nova aba `Usuários` visível somente para administradores.
-- Perfis `admin` e `manager`.
-- Administrador pode criar e ativar/desativar usuários.
-- Gerentes podem operar pedidos, produtos, categorias, cardápio do dia e configurações, mas não gerenciam usuários.
-- Horários semanais da v0.9.0 permanecem.
+Versão 1.0 do MVP.
+
+## Incluído
+- catálogo, carrinho e checkout;
+- pedidos no Firestore;
+- painel administrativo;
+- produtos, categorias e cardápio do dia;
+- horários semanais;
+- upload de imagens via Cloudinary;
+- usuários administrativos;
+- pedidos mais recentes primeiro;
+- bloqueio de auto-desativação no painel;
+- validações adicionais de nome, telefone, endereço e quantidade;
+- cooldown local contra envios repetidos;
+- regras Firestore mais restritivas;
+- headers de segurança HTTP/CSP.
+
+## Importante
+Esta versão endurece o MVP, mas o checkout ainda grava diretamente no Firestore e o preço ainda é calculado no navegador. Para pagamentos automáticos ou um cenário de fraude mais alto, a próxima evolução deve mover a criação do pedido para um endpoint server-side que consulte os preços no Firestore como fonte da verdade.
+
+## Publicação
+1. Substitua integralmente os arquivos no GitHub.
+2. Faça o deploy pela Vercel.
+3. Publique o conteúdo atualizado de `firestore.rules`.
+4. Teste login, upload de imagem, cadastro de produto, horário, pedido e status.
 
 ## Cloudinary
-Cloud name:
-`dh37kli1d`
-
-Upload preset:
-`tempero_vovo_marly_products`
-
-## Firebase
-Depois de publicar a versão, publique também o conteúdo atualizado de `firestore.rules`.
-
-## Marly Moura e Marina Moura
-Crie as duas pela nova aba:
-`Admin > Usuários > Novo usuário`
-
-Use o perfil `Gerente`.
-
-Para criar as contas é necessário informar:
-- nome;
-- e-mail;
-- senha inicial.
-
-## Variáveis recomendadas na Vercel
-`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=dh37kli1d`
-`NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=tempero_vovo_marly_products`
+- Cloud name: `dh37kli1d`
+- Upload preset: `tempero_vovo_marly_products`

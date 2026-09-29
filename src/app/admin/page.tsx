@@ -37,6 +37,7 @@ export default function AdminPage(){
   const [newUser,setNewUser]=useState({name:"",email:"",password:"",role:"manager" as "admin"|"manager"});
   const [userBusy,setUserBusy]=useState(false);
   const [userMessage,setUserMessage]=useState("");
+  const currentUid=user?.uid || "";
   const [settings,setSettings]=useState<StoreSettings>({
     name:"Tempero da Vovó Marly",whatsapp:"5582996451844",active:true,deliveryEnabled:true,pickupEnabled:true,minimumOrder:0,deliveryFee:0,
     businessHours:{
@@ -79,7 +80,11 @@ export default function AdminPage(){
     ]);
     setProducts(ps.docs.map(d=>({id:d.id,...d.data()} as Product)).sort((a,b)=>(a.order||0)-(b.order||0)));
     setCategories(cs.docs.map(d=>({id:d.id,...d.data()} as Category)).sort((a,b)=>(a.order||0)-(b.order||0)));
-    setOrders(os.docs.map(d=>({id:d.id,...d.data()} as Order)));
+    setOrders(os.docs.map(d=>({id:d.id,...d.data()} as Order)).sort((a:any,b:any)=>{
+      const at=a?.createdAt?.seconds||0;
+      const bt=b?.createdAt?.seconds||0;
+      return bt-at;
+    }));
     if(ss.exists()) setSettings(ss.data() as StoreSettings);
 
     try{
@@ -203,6 +208,10 @@ export default function AdminPage(){
 
   async function toggleStaffUser(member:AdminUser){
     if(currentRole!=="admin")return;
+    if(member.id===currentUid){
+      alert("Você não pode desativar o próprio acesso.");
+      return;
+    }
     await updateDoc(doc(db,"users",member.id),{active:!member.active});
     await loadAll();
   }
@@ -302,10 +311,10 @@ export default function AdminPage(){
         <div className="usersList">
           {adminUsers.map(member=><div className="userRow" key={member.id}>
             <div className="userAvatar">{(member.name||member.email||"?").charAt(0).toUpperCase()}</div>
-            <div className="userMain"><strong>{member.name||"Sem nome"}</strong><span>{member.email||"E-mail não informado"}</span></div>
+            <div className="userMain"><strong>{member.name||"Sem nome"} {member.id===currentUid&&<em className="youBadge">Você</em>}</strong><span>{member.email||"E-mail não informado"}</span></div>
             <span className={member.role==="admin"?"roleAdmin":"roleManager"}>{member.role==="admin"?"Administrador":"Gerente"}</span>
             <span className={member.active?"statusOn":"statusOff"}>{member.active?"Ativo":"Inativo"}</span>
-            <button className="userToggleButton" onClick={()=>toggleStaffUser(member)}>{member.active?"Desativar":"Ativar"}</button>
+            <button className="userToggleButton" disabled={member.id===currentUid} onClick={()=>toggleStaffUser(member)}>{member.id===currentUid?"Seu acesso":member.active?"Desativar":"Ativar"}</button>
           </div>)}
           {!adminUsers.length&&<p className="emptyMessage">Nenhum outro usuário cadastrado.</p>}
         </div>
