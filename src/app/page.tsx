@@ -5,7 +5,6 @@ import { Bike, Clock3, MapPin, MessageCircle, Minus, Plus, Search, ShoppingBag, 
 import { addDoc, collection, getDoc, getDocs, doc, query, serverTimestamp, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { Product, StoreSettings } from "@/lib/types";
-import { fallbackProducts } from "@/data/fallback";
 
 type CartItem = Product & { quantity: number };
 
@@ -13,7 +12,8 @@ const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL
 const STORE_ID = "tempero-da-vovo-marly";
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>(fallbackProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [settings, setSettings] = useState<StoreSettings>({
     name: "Tempero da Vovó Marly",
     whatsapp: "5582996451844",
@@ -53,10 +53,13 @@ export default function Home() {
           getDoc(doc(db, "stores", STORE_ID))
         ]);
         const remote = productSnap.docs.map((d) => ({ id:d.id, ...d.data() })) as Product[];
-        if (remote.length) setProducts(remote.sort((a,b)=>(a.order||0)-(b.order||0)));
+        setProducts(remote.sort((a,b)=>(a.order||0)-(b.order||0)));
         if (storeSnap.exists()) setSettings(storeSnap.data() as StoreSettings);
       } catch (error) {
         console.error(error);
+        setProducts([]);
+      } finally {
+        setProductsLoading(false);
       }
     }
     load();
@@ -207,12 +210,23 @@ export default function Home() {
             <div><strong>{item.name}</strong><p>{item.description}</p><div><b>{money.format(item.promotionalPrice||item.price)}</b><button onClick={()=>add(item)}>Adicionar</button></div></div>
           </article>)}
         </div>
+        )}
       </section>}
 
       <section className="container menuSection" id="cardapio">
         <div className="sectionHead"><div><span className="eyebrow">Peça do seu jeito</span><h2>Escolha o que vai para a mesa.</h2></div><p>{filtered.length} opções disponíveis</p></div>
         <div className="searchBar"><Search size={20}/><input value={queryText} onChange={e=>setQueryText(e.target.value)} placeholder="Buscar prato, acompanhamento, sobremesa..."/></div>
         <div className="categories">{categories.map(name=><button key={name} onClick={()=>setCategory(name)} className={category===name?"active":""}>{name}</button>)}</div>
+        {productsLoading ? (
+          <div className="catalogEmpty">
+            <strong>Carregando cardápio...</strong>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="catalogEmpty">
+            <strong>Cardápio em atualização.</strong>
+            <span>Novas opções serão adicionadas em breve.</span>
+          </div>
+        ) : (
         <div className="menuGrid">
           {filtered.map(item=><article className="foodCard" key={item.id}>
             <div className="foodVisual">{item.imageUrl?<img src={item.imageUrl} alt={item.name}/>:<span>{item.emoji||"🍽️"}</span>}{item.featured&&<b>Destaque</b>}</div>

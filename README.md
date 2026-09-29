@@ -1,3 +1,7 @@
+# Tempero da Vovó Marly — v1.0.1
+
+Correção pós-lançamento: removidos todos os produtos demonstrativos/fallback. A vitrine pública agora mostra somente produtos reais cadastrados e ativos no Firestore. Se não houver produtos, aparece a mensagem “Cardápio em atualização”.
+
 # Tempero da Vovó Marly — v1.0.0
 
 Versão 1.0 do MVP.
