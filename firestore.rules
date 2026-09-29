@@ -6,31 +6,40 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function admin() {
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function staff() {
       return signedIn()
         && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.active == true
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+        && userDoc().active == true
+        && userDoc().storeId == "tempero-da-vovo-marly"
+        && (userDoc().role == "admin" || userDoc().role == "manager");
+    }
+
+    function admin() {
+      return staff() && userDoc().role == "admin";
     }
 
     match /users/{uid} {
-      allow read: if admin();
+      allow read: if staff();
       allow create, update, delete: if admin();
     }
 
     match /stores/{storeId} {
-      allow read: if resource.data.active == true || admin();
-      allow create, update, delete: if admin();
+      allow read: if resource.data.active == true || staff();
+      allow create, update, delete: if staff();
     }
 
     match /categories/{categoryId} {
-      allow read: if resource.data.active == true || admin();
-      allow create, update, delete: if admin();
+      allow read: if resource.data.active == true || staff();
+      allow create, update, delete: if staff();
     }
 
     match /products/{productId} {
-      allow read: if resource.data.active == true || admin();
-      allow create, update, delete: if admin();
+      allow read: if resource.data.active == true || staff();
+      allow create, update, delete: if staff();
     }
 
     match /orders/{orderId} {
@@ -44,14 +53,13 @@ service cloud.firestore {
         && request.resource.data.items.size() <= 50
         && request.resource.data.total is number
         && request.resource.data.total >= 0;
-      allow read, update, delete: if admin();
+      allow read, update, delete: if staff();
     }
 
     match /customers/{customerId} {
-      allow create: if
-        request.resource.data.name is string
+      allow create: if request.resource.data.name is string
         && request.resource.data.phone is string;
-      allow read, update, delete: if admin();
+      allow read, update, delete: if staff();
     }
 
     match /{document=**} {

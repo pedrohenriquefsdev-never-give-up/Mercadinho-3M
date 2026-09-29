@@ -76,3 +76,12 @@ export type Order = {
   status: "novo" | "confirmado" | "preparando" | "saiu_entrega" | "concluido" | "cancelado";
   createdAt?: unknown;
 };
+
+export type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: "admin" | "manager";
+  active: boolean;
+  storeId: string;
+};

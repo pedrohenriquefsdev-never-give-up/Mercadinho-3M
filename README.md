@@ -1,39 +1,36 @@
-# Tempero da Vovó Marly — v0.9.0
-
-Release Candidate do MVP.
+# Tempero da Vovó Marly — v0.9.1
 
 ## Novidades
-- Horários de funcionamento por dia da semana no painel.
-- Possibilidade de marcar dias como fechados.
-- Site público mostra automaticamente:
-  - Aberto hoje até HH:MM
-  - Abre hoje às HH:MM
-  - Fechado hoje
-  - Fechado • encerrou às HH:MM
-- Carrinho impede checkout quando o estabelecimento está fechado.
-- Mantém pedidos, produtos, categorias, cardápio do dia e configurações.
-- Link administrativo continua oculto da página pública.
+- Upload de imagem do produto direto para o Cloudinary.
+- Prévia da imagem e opção de remover antes de salvar.
+- Limite de 5 MB e formatos JPG, PNG e WEBP.
+- Nova aba `Usuários` visível somente para administradores.
+- Perfis `admin` e `manager`.
+- Administrador pode criar e ativar/desativar usuários.
+- Gerentes podem operar pedidos, produtos, categorias, cardápio do dia e configurações, mas não gerenciam usuários.
+- Horários semanais da v0.9.0 permanecem.
 
-## Após subir no GitHub
-A Vercel fará o deploy normalmente.
+## Cloudinary
+Cloud name:
+`dh37kli1d`
+
+Upload preset:
+`tempero_vovo_marly_products`
 
 ## Firebase
-A estrutura `stores/tempero-da-vovo-marly` agora pode conter:
+Depois de publicar a versão, publique também o conteúdo atualizado de `firestore.rules`.
 
-businessHours:
-- monday: { enabled, open, close }
-- tuesday: { enabled, open, close }
-- wednesday: { enabled, open, close }
-- thursday: { enabled, open, close }
-- friday: { enabled, open, close }
-- saturday: { enabled, open, close }
-- sunday: { enabled, open, close }
+## Marly Moura e Marina Moura
+Crie as duas pela nova aba:
+`Admin > Usuários > Novo usuário`
 
-O painel salva isso automaticamente.
+Use o perfil `Gerente`.
 
-## Antes da V1.0
-Ainda faltam as camadas finais:
-- App Check;
-- rate limit real para pedidos;
-- validação server-side de preços;
-- estratégia definitiva para upload de imagens.
+Para criar as contas é necessário informar:
+- nome;
+- e-mail;
+- senha inicial.
+
+## Variáveis recomendadas na Vercel
+`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=dh37kli1d`
+`NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=tempero_vovo_marly_products`
