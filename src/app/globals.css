@@ -17,3 +17,26 @@
 .modalBackdrop{position:fixed;inset:0;z-index:90;border:0;background:rgba(20,12,8,.58)}.productModal{position:fixed;z-index:100;right:0;top:0;width:min(560px,100%);height:100dvh;overflow:auto;padding:22px;background:#fff9f1;box-shadow:-24px 0 60px rgba(40,20,10,.2)}.modalHead{display:flex;align-items:center;justify-content:space-between}.modalHead span{color:var(--orange2);font-size:10px;font-weight:950;letter-spacing:.12em}.modalHead h2{margin:4px 0 0;color:var(--brown)}.modalHead>button{width:38px;height:38px;border:0;border-radius:11px;background:var(--cream2);display:grid;place-items:center}.imagePreview{width:100%;max-height:220px;object-fit:cover;border-radius:16px;border:1px solid var(--line)}.emptyMessage{color:var(--muted);font-size:13px}
 @media(max-width:1024px){.heroGrid{grid-template-columns:1fr}.dailyGrid{grid-template-columns:1fr 1fr}.menuGrid{grid-template-columns:repeat(3,1fr)}.adminShell{grid-template-columns:220px 1fr}.statsGrid{grid-template-columns:1fr 1fr}.dailyAdminGrid{grid-template-columns:1fr 1fr}.productRow{grid-template-columns:58px 1fr 120px 90px}.productFlags{display:none}.ordersList{grid-template-columns:1fr}}
 @media(max-width:760px){.container{width:min(100% - 22px,1180px)}.waButton{display:none}.heroCopy h1{font-size:42px}.sectionHead{display:block}.sectionHead p{margin-top:9px}.dailyGrid,.menuGrid{grid-template-columns:1fr}.adminShell{display:block}.adminSidebar{position:static;height:auto;padding:12px}.adminBrand{padding-bottom:12px}.adminSidebar nav{grid-template-columns:repeat(6,1fr);overflow:auto}.adminSidebar nav button{justify-content:center;font-size:0;padding:0}.adminSidebar nav button svg{width:19px;height:19px}.logoutButton{margin-top:8px;justify-content:center}.adminContent{padding:18px 12px}.adminHeader{align-items:flex-start;flex-direction:column}.statsGrid{grid-template-columns:1fr 1fr}.productRow{grid-template-columns:52px 1fr 80px}.productFlags,.productRow>b{display:none}.dailyAdminGrid{grid-template-columns:1fr}.formGrid2{grid-template-columns:1fr}.compactList>div{grid-template-columns:1fr 100px}.compactList span{display:none}.panelHead{align-items:flex-start;flex-direction:column}.footerInner{align-items:flex-start;flex-direction:column;gap:15px}}
+
+.closedBadge{background:rgba(169,43,37,.09)!important;color:#8c2923!important}
+.hoursSection{margin-top:8px;padding-top:18px;border-top:1px solid #eadbc8}
+.hoursTitle span{color:var(--orange2);font-size:10px;font-weight:950;letter-spacing:.12em}
+.hoursTitle h3{margin:5px 0 4px;color:var(--brown);font-size:20px}
+.hoursTitle p{margin:0;color:var(--muted);font-size:12px}
+.hoursList{display:grid;margin-top:14px;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.hoursRow{display:grid;grid-template-columns:1.2fr 150px 150px 90px;gap:12px;align-items:center;padding:12px 14px;background:#fff;border-bottom:1px solid #eee1cf}
+.hoursRow:last-child{border-bottom:0}
+.dayToggle{display:flex!important;align-items:center;gap:9px!important;font-size:13px!important}
+.dayToggle input{width:auto!important}
+.timeField{display:grid;grid-template-columns:42px 1fr;align-items:center;gap:7px}
+.timeField span{color:var(--muted);font-size:10px;font-weight:800}
+.timeField input{padding:9px 10px!important}
+.timeField input:disabled{opacity:.45;background:#f3eee7}
+.dayOpen,.dayClosed{justify-self:end;padding:6px 9px;border-radius:99px;font-size:10px}
+.dayOpen{background:#e5f3df;color:#2f6928}
+.dayClosed{background:#f4e4e2;color:#9b3029}
+@media(max-width:760px){
+  .hoursRow{grid-template-columns:1fr 1fr;gap:10px}
+  .dayToggle{grid-column:1/-1}
+  .dayOpen,.dayClosed{grid-column:1/-1;justify-self:start}
+}

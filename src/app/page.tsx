@@ -21,7 +21,16 @@ export default function Home() {
     deliveryEnabled: true,
     pickupEnabled: true,
     minimumOrder: 0,
-    deliveryFee: 0
+    deliveryFee: 0,
+    businessHours: {
+      sunday: { enabled: false, open: "08:00", close: "14:00" },
+      monday: { enabled: true, open: "08:00", close: "20:00" },
+      tuesday: { enabled: true, open: "08:00", close: "20:00" },
+      wednesday: { enabled: true, open: "08:00", close: "20:00" },
+      thursday: { enabled: true, open: "08:00", close: "20:00" },
+      friday: { enabled: true, open: "08:00", close: "20:00" },
+      saturday: { enabled: true, open: "08:00", close: "16:00" }
+    }
   });
   const [queryText, setQueryText] = useState("");
   const [category, setCategory] = useState("Todos");
@@ -72,6 +81,30 @@ export default function Home() {
   const subtotal = cart.reduce((s,i)=>s+(i.promotionalPrice || i.price)*i.quantity,0);
   const deliveryFee = form.deliveryType === "entrega" ? Number(settings.deliveryFee || 0) : 0;
   const total = subtotal + deliveryFee;
+
+  const todayStatus = useMemo(() => {
+    const hours = settings.businessHours;
+    if (!settings.active) return { text: "Fechado no momento", acceptingOrders: false };
+    if (!hours) return { text: "Consulte nosso horário", acceptingOrders: true };
+
+    const keys = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"] as const;
+    const now = new Date();
+    const today = hours[keys[now.getDay()]];
+
+    if (!today?.enabled) {
+      return { text: "Fechado hoje", acceptingOrders: false };
+    }
+
+    const [openH, openM] = today.open.split(":").map(Number);
+    const [closeH, closeM] = today.close.split(":").map(Number);
+    const current = now.getHours() * 60 + now.getMinutes();
+    const open = openH * 60 + openM;
+    const close = closeH * 60 + closeM;
+
+    if (current < open) return { text: `Abre hoje às ${today.open}`, acceptingOrders: false };
+    if (current >= close) return { text: `Fechado • encerrou às ${today.close}`, acceptingOrders: false };
+    return { text: `Aberto hoje até ${today.close}`, acceptingOrders: true };
+  }, [settings.active, settings.businessHours]);
 
   function add(item: Product) {
     setCart(current => {
@@ -170,7 +203,7 @@ export default function Home() {
             <h1>Comida boa, caseira e feita com carinho.</h1>
             <p>Escolha seu prato, monte seu pedido e fale com a equipe em poucos cliques.</p>
             <div className="heroInfo">
-              <span><Clock3 size={16}/> Aberto hoje até 16h</span>
+              <span className={todayStatus.acceptingOrders ? "" : "closedBadge"}><Clock3 size={16}/> {todayStatus.text}</span>
               <span><Bike size={16}/> Delivery e retirada</span>
               <span><MapPin size={16}/> Atendimento local</span>
             </div>
@@ -230,7 +263,7 @@ export default function Home() {
               <strong className="cartTotal">{money.format((item.promotionalPrice||item.price)*item.quantity)}</strong>
             </div>)}
           </div>
-          <div className="cartFooter"><div className="subtotal"><span>Subtotal</span><strong>{money.format(subtotal)}</strong></div><p>Entrega e pagamento são definidos na próxima etapa.</p><button disabled={!cart.length} onClick={()=>{setCartOpen(false);setCheckoutOpen(true)}}>Continuar pedido</button></div>
+          <div className="cartFooter"><div className="subtotal"><span>Subtotal</span><strong>{money.format(subtotal)}</strong></div><p>{todayStatus.acceptingOrders ? "Entrega e pagamento são definidos na próxima etapa." : "O estabelecimento está fechado no momento. Você ainda pode consultar o cardápio."}</p><button disabled={!cart.length || !todayStatus.acceptingOrders} onClick={()=>{setCartOpen(false);setCheckoutOpen(true)}}>{todayStatus.acceptingOrders ? "Continuar pedido" : "Pedidos fechados agora"}</button></div>
         </aside>
       </>}
 

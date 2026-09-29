@@ -1,31 +1,39 @@
-# Tempero da Vovó Marly — v0.5.0
+# Tempero da Vovó Marly — v0.9.0
 
-## Entrou nesta versão
-- remoção total do link administrativo da página pública;
-- `/admin` continua acessível apenas digitando a URL;
-- produtos e categorias no Firestore;
-- checkout público;
-- pedido salvo em `orders`;
-- envio do resumo para WhatsApp após salvar;
-- painel administrativo com aba **Pedidos**;
-- alteração de status do pedido;
-- produtos, categorias, cardápio do dia e configurações;
-- regras do Firestore incluídas em `firestore.rules`;
-- bloqueio simples após tentativas repetidas de login no navegador.
+Release Candidate do MVP.
 
-## Depois do upload
-1. Faça o deploy pela Vercel.
-2. No Firebase, vá em Firestore > Rules.
-3. Substitua as regras atuais pelo conteúdo de `firestore.rules`.
-4. Publique as regras.
+## Novidades
+- Horários de funcionamento por dia da semana no painel.
+- Possibilidade de marcar dias como fechados.
+- Site público mostra automaticamente:
+  - Aberto hoje até HH:MM
+  - Abre hoje às HH:MM
+  - Fechado hoje
+  - Fechado • encerrou às HH:MM
+- Carrinho impede checkout quando o estabelecimento está fechado.
+- Mantém pedidos, produtos, categorias, cardápio do dia e configurações.
+- Link administrativo continua oculto da página pública.
 
-## Atenção sobre segurança
-Esta versão já restringe o painel e valida minimamente pedidos no Firestore.
-Para a V1.0 ainda recomendamos:
-- Firebase App Check;
-- rate limit real no backend;
-- validação server-side dos preços;
-- CAPTCHA/Turnstile quando necessário;
-- armazenamento de imagens externo ou Firebase Storage futuramente.
+## Após subir no GitHub
+A Vercel fará o deploy normalmente.
 
-O cálculo de preço ainda acontece no cliente e é registrado no pedido; portanto esta versão é boa para operação assistida por WhatsApp, mas ainda não é a etapa final para pagamentos automáticos.
+## Firebase
+A estrutura `stores/tempero-da-vovo-marly` agora pode conter:
+
+businessHours:
+- monday: { enabled, open, close }
+- tuesday: { enabled, open, close }
+- wednesday: { enabled, open, close }
+- thursday: { enabled, open, close }
+- friday: { enabled, open, close }
+- saturday: { enabled, open, close }
+- sunday: { enabled, open, close }
+
+O painel salva isso automaticamente.
+
+## Antes da V1.0
+Ainda faltam as camadas finais:
+- App Check;
+- rate limit real para pedidos;
+- validação server-side de preços;
+- estratégia definitiva para upload de imagens.

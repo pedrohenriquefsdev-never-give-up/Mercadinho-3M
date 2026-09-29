@@ -23,6 +23,22 @@ export type Category = {
   order: number;
 };
 
+export type BusinessDay = {
+  enabled: boolean;
+  open: string;
+  close: string;
+};
+
+export type BusinessHours = {
+  sunday: BusinessDay;
+  monday: BusinessDay;
+  tuesday: BusinessDay;
+  wednesday: BusinessDay;
+  thursday: BusinessDay;
+  friday: BusinessDay;
+  saturday: BusinessDay;
+};
+
 export type StoreSettings = {
   name: string;
   whatsapp: string;
@@ -31,6 +47,7 @@ export type StoreSettings = {
   pickupEnabled: boolean;
   minimumOrder: number;
   deliveryFee: number;
+  businessHours?: BusinessHours;
 };
 
 export type OrderItem = {

@@ -5,7 +5,7 @@ import { BarChart3, BookOpen, Boxes, ClipboardList, LogOut, Pencil, Plus, Save, 
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, User } from "firebase/auth";
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
-import type { Category, Order, Product, StoreSettings } from "@/lib/types";
+import type { BusinessHours, Category, Order, Product, StoreSettings } from "@/lib/types";
 
 const STORE_ID = "tempero-da-vovo-marly";
 const money = new Intl.NumberFormat("pt-BR", { style:"currency", currency:"BRL" });
@@ -30,7 +30,16 @@ export default function AdminPage(){
   const [categories,setCategories]=useState<Category[]>([]);
   const [orders,setOrders]=useState<Order[]>([]);
   const [settings,setSettings]=useState<StoreSettings>({
-    name:"Tempero da Vovó Marly",whatsapp:"5582996451844",active:true,deliveryEnabled:true,pickupEnabled:true,minimumOrder:0,deliveryFee:0
+    name:"Tempero da Vovó Marly",whatsapp:"5582996451844",active:true,deliveryEnabled:true,pickupEnabled:true,minimumOrder:0,deliveryFee:0,
+    businessHours:{
+      sunday:{enabled:false,open:"08:00",close:"14:00"},
+      monday:{enabled:true,open:"08:00",close:"20:00"},
+      tuesday:{enabled:true,open:"08:00",close:"20:00"},
+      wednesday:{enabled:true,open:"08:00",close:"20:00"},
+      thursday:{enabled:true,open:"08:00",close:"20:00"},
+      friday:{enabled:true,open:"08:00",close:"20:00"},
+      saturday:{enabled:true,open:"08:00",close:"16:00"}
+    }
   });
 
   const [productModal,setProductModal]=useState(false);
@@ -89,6 +98,37 @@ export default function AdminPage(){
   async function toggleDaily(p:Product){await updateDoc(doc(db,"products",p.id),{dailySpecial:!p.dailySpecial});await loadAll()}
   async function addCategory(){const name=newCategory.trim();if(!name)return;await addDoc(collection(db,"categories"),{storeId:STORE_ID,name,active:true,order:categories.length+1});setNewCategory("");await loadAll()}
   async function removeCategory(id:string){if(confirm("Excluir esta categoria?")){await deleteDoc(doc(db,"categories",id));await loadAll()}}
+
+  const dayLabels: Array<{key:keyof BusinessHours,label:string}> = [
+    {key:"monday",label:"Segunda-feira"},
+    {key:"tuesday",label:"Terça-feira"},
+    {key:"wednesday",label:"Quarta-feira"},
+    {key:"thursday",label:"Quinta-feira"},
+    {key:"friday",label:"Sexta-feira"},
+    {key:"saturday",label:"Sábado"},
+    {key:"sunday",label:"Domingo"}
+  ];
+
+  function updateBusinessDay(day:keyof BusinessHours, field:"enabled"|"open"|"close", value:boolean|string){
+    const current = settings.businessHours || {
+      sunday:{enabled:false,open:"08:00",close:"14:00"},
+      monday:{enabled:true,open:"08:00",close:"20:00"},
+      tuesday:{enabled:true,open:"08:00",close:"20:00"},
+      wednesday:{enabled:true,open:"08:00",close:"20:00"},
+      thursday:{enabled:true,open:"08:00",close:"20:00"},
+      friday:{enabled:true,open:"08:00",close:"20:00"},
+      saturday:{enabled:true,open:"08:00",close:"16:00"}
+    };
+
+    setSettings({
+      ...settings,
+      businessHours:{
+        ...current,
+        [day]:{...current[day],[field]:value}
+      }
+    });
+  }
+
   async function saveSettings(e:FormEvent){e.preventDefault();await setDoc(doc(db,"stores",STORE_ID),settings,{merge:true});alert("Configurações salvas.")}
   async function updateOrderStatus(id:string,status:string){await updateDoc(doc(db,"orders",id),{status});await loadAll()}
 
@@ -158,7 +198,23 @@ export default function AdminPage(){
         <label>WhatsApp<input value={settings.whatsapp||""} onChange={e=>setSettings({...settings,whatsapp:e.target.value})}/></label>
         <div className="formGrid2"><label>Pedido mínimo<input type="number" step="0.01" value={settings.minimumOrder??0} onChange={e=>setSettings({...settings,minimumOrder:Number(e.target.value)})}/></label><label>Taxa de entrega<input type="number" step="0.01" value={settings.deliveryFee??0} onChange={e=>setSettings({...settings,deliveryFee:Number(e.target.value)})}/></label></div>
         <div className="checkRow"><label><input type="checkbox" checked={settings.deliveryEnabled} onChange={e=>setSettings({...settings,deliveryEnabled:e.target.checked})}/> Delivery</label><label><input type="checkbox" checked={settings.pickupEnabled} onChange={e=>setSettings({...settings,pickupEnabled:e.target.checked})}/> Retirada</label><label><input type="checkbox" checked={settings.active} onChange={e=>setSettings({...settings,active:e.target.checked})}/> Loja ativa</label></div>
-        <button className="saveButton"><Save size={17}/> Salvar</button>
+
+        <div className="hoursSection">
+          <div className="hoursTitle"><span>HORÁRIOS</span><h3>Funcionamento semanal</h3><p>Ajuste cada dia individualmente. Dias desativados aparecem como fechados no site.</p></div>
+          <div className="hoursList">
+            {dayLabels.map(({key,label})=>{
+              const hours=settings.businessHours?.[key] || {enabled:false,open:"08:00",close:"20:00"};
+              return <div className="hoursRow" key={key}>
+                <label className="dayToggle"><input type="checkbox" checked={hours.enabled} onChange={e=>updateBusinessDay(key,"enabled",e.target.checked)}/><span>{label}</span></label>
+                <div className="timeField"><span>Abre</span><input type="time" value={hours.open} disabled={!hours.enabled} onChange={e=>updateBusinessDay(key,"open",e.target.value)}/></div>
+                <div className="timeField"><span>Fecha</span><input type="time" value={hours.close} disabled={!hours.enabled} onChange={e=>updateBusinessDay(key,"close",e.target.value)}/></div>
+                <b className={hours.enabled?"dayOpen":"dayClosed"}>{hours.enabled?"Aberto":"Fechado"}</b>
+              </div>
+            })}
+          </div>
+        </div>
+
+        <button className="saveButton"><Save size={17}/> Salvar configurações</button>
       </form></div>}
     </section>
 
