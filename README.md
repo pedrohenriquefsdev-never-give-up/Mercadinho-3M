@@ -1,3 +1,7 @@
+# Tempero da Vovó Marly — v1.0.2
+
+Correção do JSX da página pública após a remoção dos produtos demonstrativos. O catálogo continua sem fallback e mostra apenas produtos reais do Firestore.
+
 # Tempero da Vovó Marly — v1.0.1
 
 Correção pós-lançamento: removidos todos os produtos demonstrativos/fallback. A vitrine pública agora mostra somente produtos reais cadastrados e ativos no Firestore. Se não houver produtos, aparece a mensagem “Cardápio em atualização”.

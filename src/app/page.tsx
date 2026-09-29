@@ -202,21 +202,71 @@ export default function Home() {
         </div>
       </section>
 
-      {daily.length>0 && <section className="container dailySection">
-        <div className="sectionHead"><div><span className="eyebrow">Hoje tem</span><h2>Cardápio do dia</h2></div><p>Seleção disponível hoje.</p></div>
-        <div className="dailyGrid">
-          {daily.map(item=><article key={item.id} className="dailyCard">
-            <div className="dailyVisual">{item.imageUrl?<img src={item.imageUrl} alt={item.name}/>:<span>{item.emoji||"🍽️"}</span>}</div>
-            <div><strong>{item.name}</strong><p>{item.description}</p><div><b>{money.format(item.promotionalPrice||item.price)}</b><button onClick={()=>add(item)}>Adicionar</button></div></div>
-          </article>)}
-        </div>
-        )}
-      </section>}
+      {daily.length > 0 && (
+        <section className="container dailySection">
+          <div className="sectionHead">
+            <div>
+              <span className="eyebrow">Hoje tem</span>
+              <h2>Cardápio do dia</h2>
+            </div>
+            <p>Seleção disponível hoje.</p>
+          </div>
+
+          <div className="dailyGrid">
+            {daily.map((item) => (
+              <article key={item.id} className="dailyCard">
+                <div className="dailyVisual">
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.name} />
+                  ) : (
+                    <span>{item.emoji || "🍽️"}</span>
+                  )}
+                </div>
+
+                <div>
+                  <strong>{item.name}</strong>
+                  <p>{item.description}</p>
+                  <div>
+                    <b>{money.format(item.promotionalPrice || item.price)}</b>
+                    <button onClick={() => add(item)}>Adicionar</button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="container menuSection" id="cardapio">
-        <div className="sectionHead"><div><span className="eyebrow">Peça do seu jeito</span><h2>Escolha o que vai para a mesa.</h2></div><p>{filtered.length} opções disponíveis</p></div>
-        <div className="searchBar"><Search size={20}/><input value={queryText} onChange={e=>setQueryText(e.target.value)} placeholder="Buscar prato, acompanhamento, sobremesa..."/></div>
-        <div className="categories">{categories.map(name=><button key={name} onClick={()=>setCategory(name)} className={category===name?"active":""}>{name}</button>)}</div>
+        <div className="sectionHead">
+          <div>
+            <span className="eyebrow">Peça do seu jeito</span>
+            <h2>Escolha o que vai para a mesa.</h2>
+          </div>
+          <p>{filtered.length} opções disponíveis</p>
+        </div>
+
+        <div className="searchBar">
+          <Search size={20} />
+          <input
+            value={queryText}
+            onChange={(e) => setQueryText(e.target.value)}
+            placeholder="Buscar prato, acompanhamento, sobremesa..."
+          />
+        </div>
+
+        <div className="categories">
+          {categories.map((name) => (
+            <button
+              key={name}
+              onClick={() => setCategory(name)}
+              className={category === name ? "active" : ""}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+
         {productsLoading ? (
           <div className="catalogEmpty">
             <strong>Carregando cardápio...</strong>
@@ -227,14 +277,39 @@ export default function Home() {
             <span>Novas opções serão adicionadas em breve.</span>
           </div>
         ) : (
-        <div className="menuGrid">
-          {filtered.map(item=><article className="foodCard" key={item.id}>
-            <div className="foodVisual">{item.imageUrl?<img src={item.imageUrl} alt={item.name}/>:<span>{item.emoji||"🍽️"}</span>}{item.featured&&<b>Destaque</b>}</div>
-            <div className="foodBody"><small>{item.categoryName}</small><h3>{item.name}</h3><p>{item.description}</p>
-              <div className="foodBottom"><div>{item.promotionalPrice?<del>{money.format(item.price)}</del>:null}<strong>{money.format(item.promotionalPrice||item.price)}</strong></div><button onClick={()=>add(item)}><Plus size={18}/></button></div>
-            </div>
-          </article>)}
-        </div>
+          <div className="menuGrid">
+            {filtered.map((item) => (
+              <article className="foodCard" key={item.id}>
+                <div className="foodVisual">
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.name} />
+                  ) : (
+                    <span>{item.emoji || "🍽️"}</span>
+                  )}
+                  {item.featured && <b>Destaque</b>}
+                </div>
+
+                <div className="foodBody">
+                  <small>{item.categoryName}</small>
+                  <h3>{item.name}</h3>
+                  <p>{item.description}</p>
+
+                  <div className="foodBottom">
+                    <div>
+                      {item.promotionalPrice ? (
+                        <del>{money.format(item.price)}</del>
+                      ) : null}
+                      <strong>{money.format(item.promotionalPrice || item.price)}</strong>
+                    </div>
+                    <button onClick={() => add(item)}>
+                      <Plus size={18} />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <footer className="footer"><div className="container footerInner"><div className="footerBrand"><img src="/brand/logo-round.png" alt=""/><div><strong>Tempero da Vovó Marly</strong><span>Delivery: (82) 9 9645-1844</span></div></div><span>Sabor de casa, carinho de vó.</span></div></footer>
