@@ -1,3 +1,7 @@
+# Tempero da Vovó Marly — v1.1.2
+
+Correção específica para repositório atualizado por upload manual: `src/data/fallback.ts` volta a existir, porém vazio, apenas para sobrescrever qualquer versão antiga que ainda esteja no GitHub. Nenhum produto demonstrativo será exibido.
+
 # Tempero da Vovó Marly — v1.1.1
 
 Correção de build: removido o arquivo legado `src/data/fallback.ts`, que ainda continha produtos demonstrativos e causava erro de tipagem após a inclusão de `productType`.
