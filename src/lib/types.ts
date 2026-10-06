@@ -3,6 +3,7 @@ export type Product = {
   storeId: string;
   categoryId: string;
   categoryName: string;
+  productType: "lunch" | "market";
   name: string;
   description: string;
   price: number;

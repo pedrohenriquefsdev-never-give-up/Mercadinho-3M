@@ -34,6 +34,7 @@ export default function Home() {
   });
   const [queryText, setQueryText] = useState("");
   const [category, setCategory] = useState("Todos");
+  const [catalogSection, setCatalogSection] = useState<"lunch" | "market">("lunch");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -52,7 +53,14 @@ export default function Home() {
           getDocs(query(collection(db, "products"), where("storeId", "==", STORE_ID), where("active", "==", true))),
           getDoc(doc(db, "stores", STORE_ID))
         ]);
-        const remote = productSnap.docs.map((d) => ({ id:d.id, ...d.data() })) as Product[];
+        const remote = productSnap.docs.map((d) => {
+          const data = d.data() as Omit<Product, "id">;
+          return {
+            id: d.id,
+            ...data,
+            productType: data.productType || "market"
+          } as Product;
+        });
         setProducts(remote.sort((a,b)=>(a.order||0)-(b.order||0)));
         if (storeSnap.exists()) setSettings(storeSnap.data() as StoreSettings);
       } catch (error) {
@@ -74,13 +82,28 @@ export default function Home() {
     localStorage.setItem("vovo-marly-cart", JSON.stringify(cart));
   }, [cart]);
 
-  const categories = useMemo(() => ["Todos", ...Array.from(new Set(products.map(p=>p.categoryName).filter(Boolean)))], [products]);
+  const sectionProducts = useMemo(
+    () => products.filter((p) => (p.productType || "market") === catalogSection),
+    [products, catalogSection]
+  );
+
+  const categories = useMemo(
+    () => ["Todos", ...Array.from(new Set(sectionProducts.map((p) => p.categoryName).filter(Boolean)))],
+    [sectionProducts]
+  );
+
   const filtered = useMemo(() => {
     const q = queryText.trim().toLowerCase();
-    return products.filter(p => (category==="Todos" || p.categoryName===category) && (!q || `${p.name} ${p.description} ${p.categoryName}`.toLowerCase().includes(q)));
-  }, [products, queryText, category]);
+    return sectionProducts.filter(
+      (p) =>
+        (category === "Todos" || p.categoryName === category) &&
+        (!q || `${p.name} ${p.description} ${p.categoryName}`.toLowerCase().includes(q))
+    );
+  }, [sectionProducts, queryText, category]);
 
-  const daily = products.filter(p=>p.dailySpecial).slice(0,3);
+  const daily = products
+    .filter((p) => (p.productType || "market") === "lunch" && p.dailySpecial)
+    .slice(0, 3);
   const count = cart.reduce((s,i)=>s+i.quantity,0);
   const subtotal = cart.reduce((s,i)=>s+(i.promotionalPrice || i.price)*i.quantity,0);
   const deliveryFee = form.deliveryType === "entrega" ? Number(settings.deliveryFee || 0) : 0;
@@ -202,7 +225,35 @@ export default function Home() {
         </div>
       </section>
 
-      {daily.length > 0 && (
+      <section className="container catalogSwitcherSection">
+        <div className="catalogSwitcher">
+          <button
+            className={catalogSection === "lunch" ? "active" : ""}
+            onClick={() => {
+              setCatalogSection("lunch");
+              setCategory("Todos");
+              setQueryText("");
+            }}
+          >
+            Almoços
+            <span>Cardápio, acompanhamentos e sobremesas</span>
+          </button>
+
+          <button
+            className={catalogSection === "market" ? "active" : ""}
+            onClick={() => {
+              setCatalogSection("market");
+              setCategory("Todos");
+              setQueryText("");
+            }}
+          >
+            Mercado
+            <span>Produtos de mercearia e conveniência</span>
+          </button>
+        </div>
+      </section>
+
+      {catalogSection === "lunch" && daily.length > 0 && (
         <section className="container dailySection">
           <div className="sectionHead">
             <div>
@@ -240,8 +291,8 @@ export default function Home() {
       <section className="container menuSection" id="cardapio">
         <div className="sectionHead">
           <div>
-            <span className="eyebrow">Peça do seu jeito</span>
-            <h2>Escolha o que vai para a mesa.</h2>
+            <span className="eyebrow">{catalogSection === "lunch" ? "Peça do seu jeito" : "Mercado"}</span>
+            <h2>{catalogSection === "lunch" ? "Escolha o que vai para a mesa." : "Produtos para levar para casa."}</h2>
           </div>
           <p>{filtered.length} opções disponíveis</p>
         </div>
@@ -251,7 +302,7 @@ export default function Home() {
           <input
             value={queryText}
             onChange={(e) => setQueryText(e.target.value)}
-            placeholder="Buscar prato, acompanhamento, sobremesa..."
+            placeholder={catalogSection === "lunch" ? "Buscar prato, acompanhamento, sobremesa..." : "Buscar produto do mercado..."}
           />
         </div>
 
@@ -273,7 +324,7 @@ export default function Home() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="catalogEmpty">
-            <strong>Cardápio em atualização.</strong>
+            <strong>{catalogSection === "lunch" ? "Cardápio em atualização." : "Mercado em atualização."}</strong>
             <span>Novas opções serão adicionadas em breve.</span>
           </div>
         ) : (

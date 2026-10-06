@@ -13,7 +13,7 @@ const STORE_ID = "tempero-da-vovo-marly";
 const money = new Intl.NumberFormat("pt-BR", { style:"currency", currency:"BRL" });
 
 const emptyProduct = {
-  name:"",description:"",categoryId:"",categoryName:"",price:0,promotionalPrice:null as number|null,
+  name:"",description:"",categoryId:"",categoryName:"",productType:"market" as "lunch"|"market",price:0,promotionalPrice:null as number|null,
   imageUrl:"",active:true,featured:false,dailySpecial:false,order:0
 };
 
@@ -104,7 +104,7 @@ export default function AdminPage(){
 
   function newProduct(){setEditingId(null);setProductForm({...emptyProduct,order:products.length+1});setProductModal(true)}
   function editProduct(p:Product){setEditingId(p.id);setProductForm({
-    name:p.name,description:p.description||"",categoryId:p.categoryId||"",categoryName:p.categoryName||"",
+    name:p.name,description:p.description||"",categoryId:p.categoryId||"",categoryName:p.categoryName||"",productType:p.productType||"market",
     price:Number(p.price||0),promotionalPrice:p.promotionalPrice??null,imageUrl:p.imageUrl||"",active:p.active!==false,
     featured:!!p.featured,dailySpecial:!!p.dailySpecial,order:Number(p.order||0)
   });setProductModal(true)}
@@ -271,12 +271,12 @@ export default function AdminPage(){
       </div>}
 
       {tab==="products"&&<div className="adminPanel"><div className="panelHead"><div><span>Catálogo</span><h2>Produtos</h2></div><button onClick={newProduct}><Plus size={17}/> Novo produto</button></div>
-        <div className="productTable">{products.map(p=><div className="productRow" key={p.id}><div className="productThumb">{p.imageUrl?<img src={p.imageUrl} alt=""/>:"🍽️"}</div><div className="productMain"><strong>{p.name}</strong><span>{p.categoryName}</span></div><div className="productFlags"><span className={p.active?"statusOn":"statusOff"}>{p.active?"Ativo":"Inativo"}</span>{p.dailySpecial&&<span className="statusDaily">Hoje</span>}</div><b>{money.format(p.promotionalPrice||p.price)}</b><div className="rowActions"><button onClick={()=>editProduct(p)}><Pencil size={16}/></button><button onClick={()=>removeProduct(p.id)}><Trash2 size={16}/></button></div></div>)}{!products.length&&<p className="emptyMessage">Nenhum produto cadastrado.</p>}</div>
+        <div className="productTable">{products.map(p=><div className="productRow" key={p.id}><div className="productThumb">{p.imageUrl?<img src={p.imageUrl} alt=""/>:"🍽️"}</div><div className="productMain"><strong>{p.name}</strong><span>{p.categoryName} • {(p.productType||"market")==="lunch"?"Almoço":"Mercado"}</span></div><div className="productFlags"><span className={p.active?"statusOn":"statusOff"}>{p.active?"Ativo":"Inativo"}</span>{p.dailySpecial&&<span className="statusDaily">Hoje</span>}</div><b>{money.format(p.promotionalPrice||p.price)}</b><div className="rowActions"><button onClick={()=>editProduct(p)}><Pencil size={16}/></button><button onClick={()=>removeProduct(p.id)}><Trash2 size={16}/></button></div></div>)}{!products.length&&<p className="emptyMessage">Nenhum produto cadastrado.</p>}</div>
       </div>}
 
       {tab==="categories"&&<div className="adminPanel"><div className="panelHead"><div><span>Organização</span><h2>Categorias</h2></div></div><div className="categoryCreate"><input value={newCategory} onChange={e=>setNewCategory(e.target.value)} placeholder="Nova categoria"/><button onClick={addCategory}><Plus size={17}/> Adicionar</button></div><div className="categoryList">{categories.map(c=><div key={c.id}><strong>{c.name}</strong><span>Ordem {c.order}</span><button onClick={()=>removeCategory(c.id)}><Trash2 size={16}/></button></div>)}</div></div>}
 
-      {tab==="daily"&&<div className="adminPanel"><div className="panelHead"><div><span>Disponibilidade</span><h2>Cardápio do dia</h2></div></div><p className="panelIntro">Marque os produtos que devem aparecer em destaque hoje.</p><div className="dailyAdminGrid">{products.map(p=><label key={p.id} className={p.dailySpecial?"dailyToggle selected":"dailyToggle"}><input type="checkbox" checked={p.dailySpecial} onChange={()=>toggleDaily(p)}/><div className="dailyToggleVisual">{p.imageUrl?<img src={p.imageUrl} alt=""/>:"🍽️"}</div><div><strong>{p.name}</strong><span>{p.categoryName}</span></div></label>)}</div></div>}
+      {tab==="daily"&&<div className="adminPanel"><div className="panelHead"><div><span>Disponibilidade</span><h2>Cardápio do dia</h2></div></div><p className="panelIntro">Marque os produtos que devem aparecer em destaque hoje.</p><div className="dailyAdminGrid">{products.filter(p=>(p.productType||"market")==="lunch").map(p=><label key={p.id} className={p.dailySpecial?"dailyToggle selected":"dailyToggle"}><input type="checkbox" checked={p.dailySpecial} onChange={()=>toggleDaily(p)}/><div className="dailyToggleVisual">{p.imageUrl?<img src={p.imageUrl} alt=""/>:"🍽️"}</div><div><strong>{p.name}</strong><span>{p.categoryName}</span></div></label>)}</div></div>}
 
       {tab==="settings"&&<div className="adminPanel"><div className="panelHead"><div><span>Estabelecimento</span><h2>Configurações</h2></div></div><form onSubmit={saveSettings} className="settingsForm">
         <label>Nome<input value={settings.name||""} onChange={e=>setSettings({...settings,name:e.target.value})}/></label>
@@ -324,6 +324,12 @@ export default function AdminPage(){
     {productModal&&<><button className="modalBackdrop" onClick={()=>setProductModal(false)}/><div className="productModal"><div className="modalHead"><div><span>PRODUTO</span><h2>{editingId?"Editar produto":"Novo produto"}</h2></div><button onClick={()=>setProductModal(false)}><X size={20}/></button></div><form onSubmit={saveProduct}>
       <label>Nome<input value={productForm.name} onChange={e=>setProductForm({...productForm,name:e.target.value})} required/></label>
       <label>Descrição<textarea rows={3} value={productForm.description} onChange={e=>setProductForm({...productForm,description:e.target.value})}/></label>
+      <label>Área
+        <select value={productForm.productType} onChange={e=>setProductForm({...productForm,productType:e.target.value as "lunch"|"market"})}>
+          <option value="lunch">Almoços</option>
+          <option value="market">Mercado</option>
+        </select>
+      </label>
       <label>Categoria<select value={productForm.categoryId} onChange={e=>setProductForm({...productForm,categoryId:e.target.value})}><option value="">Sem categoria</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
       <div className="formGrid2"><label>Preço<input type="number" step="0.01" value={productForm.price} onChange={e=>setProductForm({...productForm,price:Number(e.target.value)})} required/></label><label>Preço promocional<input type="number" step="0.01" value={productForm.promotionalPrice??""} onChange={e=>setProductForm({...productForm,promotionalPrice:e.target.value?Number(e.target.value):null})}/></label></div>
       <div className="imageUploadField">
