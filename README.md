@@ -1,3 +1,7 @@
+# Tempero da Vovó Marly — v1.1.1
+
+Correção de build: removido o arquivo legado `src/data/fallback.ts`, que ainda continha produtos demonstrativos e causava erro de tipagem após a inclusão de `productType`.
+
 # Tempero da Vovó Marly — v1.1.0
 
 Versão com separação entre **Almoços** e **Mercado**.
